@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Hiroo 5km Radius with Labels</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<!-- Google Fonts: Montserrat -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet" />
+<style>
+  body, html, #map { height: 100%; margin: 0; padding: 0; }
+  .label-text {
+    font-family: 'Montserrat', sans-serif;
+    fill: #b0b0b0;
+    font-weight: 600;
+    font-size: 18px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+  var center = [35.652278, 139.722222];
+  var map = L.map('map').setView(center, 12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  L.marker(center).addTo(map).bindPopup("Hiroo Station").openPopup();
+
+  var radii = [1000, 2000, 3000, 4000, 5000];
+
+  radii.forEach(function(r) {
+    var circle = L.circle(center, {
+      radius: r,
+      color: "#8F8F8F",
+      weight: 1.2,
+      fillColor: "#CFCFCF",
+      fillOpacity: 0.08
+    }).addTo(map);
+
+    // ラベルを9時の位置に配置
+    // 緯度経度から9時の位置座標を計算
+    // 地球半径 約6371km、緯度経度の計算は簡易計算でOK
+
+    var lat = center[0];
+    var lng = center[1];
+
+    // 半径r[m]を経度差に変換（9時は西＝lngマイナス方向）
+    // 緯度方向は変えずに経度だけずらす。1度経度は距離により変わる。
+    var metersPerDegreeLng = 111320 * Math.cos(lat * Math.PI / 180);
+    var deltaLng = -r / metersPerDegreeLng; // 9時の方向に移動
+
+    var labelLatLng = [lat, lng + deltaLng];
+
+    // SVG要素としてテキストラベル追加
+    var label = L.marker(labelLatLng, {
+      icon: L.divIcon({
+        className: 'label-text',
+        html: r/1000 + ' km',
+        iconSize: [40, 20],
+        iconAnchor: [20, 10],
+        interactive: false
+      })
+    }).addTo(map);
+  });
+
+</script>
+</body>
+</html>
